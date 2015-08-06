@@ -46,9 +46,7 @@ def date_ellipse(content, width=None):
     try:
         return content.strftime(DATE_FORMATS[0][0])
     except AttributeError:
-        return ''
-    # return content.strftime(best_date_format(content, width)[0])
-
+        return content
 
 def float_ellipse(content, width=2):
     if width > 7:
