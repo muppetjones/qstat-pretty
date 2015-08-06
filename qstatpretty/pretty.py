@@ -43,7 +43,10 @@ def date_ellipse(content, width=None):
     if not content:
         return ''
 
-    return content.strftime(DATE_FORMATS[0][0])
+    try:
+        return content.strftime(DATE_FORMATS[0][0])
+    except AttributeError:
+        return ''
     # return content.strftime(best_date_format(content, width)[0])
 
 
