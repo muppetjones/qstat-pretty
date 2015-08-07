@@ -135,8 +135,8 @@ class ParserTorque(Parser):
             jobs['t_comp'] = ''
 
         # remove HOST
-        jobs['owner'] = jobs['owner'].replace(jobs['host'], 'HOST')
-        jobs['number'] = jobs['number'].replace(jobs['host'], 'HOST')
+        jobs['owner'] = jobs['owner'].replace(jobs['host'], '')[:-1]
+        jobs['number'] = jobs['number'].replace(jobs['host'], '')[:-1]
 
         return jobs
 

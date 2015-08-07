@@ -23,7 +23,10 @@ def state_color(s):
 
 
 DATE_FORMATS = [
-    ('%H:%M:%S  %y.%m.%d', 19),
+    ('%H:%M:%S  %y.%m.%d', 18),
+    ('%H:%M:%S  %m.%d', 15),
+    ('%H:%M:%S', 8),
+    ('%H:%M', 5),
     ('%Y-%m-%d %H:%M:%S', 20),
     ('%m-%d %H:%M:%S', 18),
     ('%a %H:%M:%S', 16),
@@ -44,14 +47,19 @@ def date_ellipse(content, width=None):
         return ''
 
     try:
+        if width:
+            return content.strftime(best_date_format(content, width)[0])
         return content.strftime(DATE_FORMATS[0][0])
     except AttributeError:
         return content
+
 
 def float_ellipse(content, width=2):
     if width > 7:
         width = 7
 
+    print('width: {}'.format(width))
+    print(type(content))
     if width > 2:
         try:
             return "{0:.{1}f}".format(content, width - 2)
@@ -71,9 +79,9 @@ DEFAULT_TABLE_FORMAT = [
     },
     {
         'key': 'priority',
-        'title': 'priorty',
+        'title': 'priority',
         'color': lambda x: None,
-        'ellipsis': float_ellipse,
+        'ellipsis': ttyshrink.simple_ellipsis(),
         'fval': ttyshrink.simple_value(factor=2, max_width=7)
     },
     {
@@ -147,6 +155,7 @@ def pretty_table(
 
     if jobs:
         tbl = job_table(jobs, table_format)
-        tbl, delimiters = ttyshrink.fit_table(
+        tbl, delimiters, common = ttyshrink.fit_table(
             tbl, terminal_width, table_format, delimiters)
-        print(ttytable.pretty_table(tbl, table_format, delimiters=delimiters))
+        print(ttytable.pretty_table(
+            tbl, table_format, delimiters=delimiters, common=common))

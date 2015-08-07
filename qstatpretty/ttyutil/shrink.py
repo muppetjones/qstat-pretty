@@ -101,24 +101,74 @@ def fit_table(tbl, width, tbldef, delimiters):
         max(len(tbldef[cx]['ellipsis'](c)) for rx, c in enumerate(col))
         for cx, col in enumerate(zip(*tbl))
     ]
-    for rx, row in enumerate(tbl):
-        for cx, (w, cell) in enumerate(zip(max_widths, row)):
-            if rx > 0:
-                try:
-                    tbl[rx][cx] = tbldef[cx]['ellipsis'](cell)
-                except TypeError:
-                    raise
-            else:
-                tbl[rx][cx] = "{0: <{1}}".format(str(cell), w)
 
     col_width = sum(max_widths)
     sep_width = len(max_widths) - 1
     max_sep = 3
     n_sep = 1
-    while n_sep < max_sep and (col_width + sep_width * n_sep) < width:
+
+    common = []
+    if (col_width + sep_width * n_sep) > width:
+        removable = ['priority', 'queue', 'user']
+
+        # remove less important rows IFF all rows are same
+        def checkEqual(x):
+            return len(set(x)) <= 1
+        for r in removable:
+            if (col_width + sep_width * n_sep) < width:
+                break
+
+            idx = tbl[0].index(r)
+
+            col = [row[idx] for row in tbl[1:]]
+            if checkEqual(col):
+                common.append((r, col[0]))
+                for row in tbl:
+                    row.pop(idx)
+            max_widths.pop(idx)
+            tbldef.pop(idx)
+
+            col_width = sum(max_widths)
+            sep_width = len(max_widths) - 1
+
+        shrinkable = [
+            ('priority', 2),
+            ('submitted', 16), ('started', 16),
+            ('submitted', 8), ('started', 8),
+            ('submitted', 5), ('started', 5),
+            ('state', 1),
+        ]
+
+        for k, w in shrinkable:
+            if (col_width + sep_width * n_sep) < width:
+                break
+            try:
+                idx = tbl[0].index(k)
+            except ValueError:
+                continue
+
+            max_widths[idx] = w if w < max_widths[idx] else max_widths[idx]
+            col_width = sum(max_widths)
+            sep_width = len(max_widths) - 1
+
+    # header
+    for cx, (w, cell) in enumerate(zip(max_widths, tbl[0])):
+        tbl[0][cx] = "{0: <{1}}".format(str(cell), w)
+        if len(tbl[0][cx]) > w:
+            tbl[0][cx] = tbl[0][cx][0:w]
+
+    # table
+    for rx, row in enumerate(tbl):
+        for cx, (w, cell) in enumerate(zip(max_widths, row)):
+            try:
+                tbl[rx][cx] = tbldef[cx]['ellipsis'](cell, w)
+            except TypeError:
+                raise
+
+    while n_sep < max_sep and (col_width + sep_width * (n_sep + 1)) < width:
         n_sep += 1
     seps = ('header_csep_m', 'header_csep_b', 'body_csep_m')
     for sep in seps:
         delimiters[sep] = delimiters[sep] * n_sep
 
-    return tbl, delimiters
+    return tbl, delimiters, common

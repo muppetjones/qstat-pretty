@@ -76,7 +76,7 @@ DELIMITERS_PROFESSIONAL = {
 }
 
 
-def pretty_table(tbl, colordef, header_row=True, delimiters=DELIMITERS_DEFAULT):
+def pretty_table(tbl, colordef, header_row=True, delimiters=DELIMITERS_DEFAULT, common=[]):
     from .color import COLOR_BLACK, colortext
 
     d = delimiters
@@ -89,7 +89,12 @@ def pretty_table(tbl, colordef, header_row=True, delimiters=DELIMITERS_DEFAULT):
     pretty_top = d['header_tl'] + d['header_csep_t'].join(
         d['header_t'] * w for w in max_widths) + d['header_tr'] + "\n"
     pretty_bottom = d[
-        'body_bl'] + d['body_csep_b'].join(d['body_b'] * w for w in max_widths) + d['body_br']
+        'body_bl'] + d['body_csep_b'].join(d['body_b'] * w for w in max_widths) + '\n'
+    if common:
+        pretty_common = '\nCommon:\n  ' + \
+            '\n  '.join('{}: {}'.format(k, v)
+                        for k, v in common) + d['body_br']
+        pretty_bottom = pretty_common + pretty_bottom
 
     if header_row:
         header = tjust.pop(0)
